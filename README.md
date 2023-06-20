@@ -1,7 +1,4 @@
-Nome: Arthur de Oliveira Galanti
-RA: 2840482013014
-
-# MEU DIM
+# apppagar
 
 A new Flutter project.
 

@@ -2,8 +2,24 @@
 
 import 'package:flutter/material.dart';
 
-class SignupPage extends StatelessWidget {
+import '../controller/login_controller.dart';
+
+class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
+
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
+  var txtNome = TextEditingController();
+  var txtEmail = TextEditingController();
+  var txtSenha = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +67,7 @@ class SignupPage extends StatelessWidget {
                       ),
                       SizedBox(height: 60),
                       TextFormField(
+                        controller: txtNome,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: "Nome",
@@ -66,6 +83,7 @@ class SignupPage extends StatelessWidget {
                       ),
                       SizedBox(height: 10),
                       TextFormField(
+                        controller: txtEmail,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: "E-mail",
@@ -81,26 +99,11 @@ class SignupPage extends StatelessWidget {
                       ),
                       SizedBox(height: 10),
                       TextFormField(
+                        controller: txtSenha,
                         keyboardType: TextInputType.text,
                         obscureText: true,
                         decoration: InputDecoration(
                           labelText: "Senha",
-                          labelStyle: TextStyle(
-                            color: Colors.black,
-                            fontWeight: FontWeight.w400,
-                            fontSize: 16,
-                          ),
-                        ),
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      TextFormField(
-                        keyboardType: TextInputType.text,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          labelText: "Senha novamente",
                           labelStyle: TextStyle(
                             color: Colors.black,
                             fontWeight: FontWeight.w400,
@@ -120,7 +123,20 @@ class SignupPage extends StatelessWidget {
                             borderRadius: BorderRadius.all(
                               Radius.circular(5),
                             )),
-                        child: SignupMessage(),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            LoginController().create(
+                              context,
+                              txtNome.text,
+                              txtEmail.text,
+                              txtSenha.text,
+                            );
+                          },
+                          child: const Text(
+                            'Cadastrar',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -129,37 +145,6 @@ class SignupPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class SignupMessage extends StatelessWidget {
-  const SignupMessage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Cadastrado'),
-          content: const Text(
-              'E-mail enviado. \n Verifique sua caixa de correio para confirmar o cadastro.',
-              textAlign: TextAlign.center),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context)
-                ..pop()
-                ..pop(),
-              child: const Icon(Icons.done),
-            ),
-          ],
-        ),
-      ),
-      child: const Text(
-        'Cadastrar',
-        style: TextStyle(color: Colors.white),
       ),
     );
   }

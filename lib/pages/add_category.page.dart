@@ -1,10 +1,23 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
-
-import 'package:apppagar/pages/drawer.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
-class AddCategoryPage extends StatelessWidget {
+import '../controller/login_controller.dart';
+import '../controller/category_controller.dart';
+import '../widgets/drawer.dart';
+import '../model/category.dart';
+
+class AddCategoryPage extends StatefulWidget {
   const AddCategoryPage({super.key});
+
+  @override
+  State<AddCategoryPage> createState() => _AddCategoryPageState();
+}
+
+class _AddCategoryPageState extends State<AddCategoryPage> {
+  var txtCategory = TextEditingController();
+  var txtUpdateCategory = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +66,7 @@ class AddCategoryPage extends StatelessWidget {
                       ),
                       SizedBox(height: 60),
                       TextFormField(
-                        keyboardType: TextInputType.emailAddress,
+                        controller: txtCategory,
                         decoration: InputDecoration(
                           labelText: "Nome da categoria",
                           labelStyle: TextStyle(
@@ -67,15 +80,26 @@ class AddCategoryPage extends StatelessWidget {
                         ),
                       ),
                       Container(
-                          margin: EdgeInsets.only(top: 40, bottom: 30),
-                          width: double.infinity,
-                          height: 45,
-                          decoration: BoxDecoration(
-                              color: Colors.blue,
-                              borderRadius: BorderRadius.all(
-                                Radius.circular(5),
-                              )),
-                          child: RecoveryMessage()),
+                        margin: EdgeInsets.only(top: 40, bottom: 30),
+                        width: double.infinity,
+                        height: 45,
+                        decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(5),
+                            )),
+                        child: ElevatedButton(
+                          child: Text("Adicionar"),
+                          onPressed: () {
+                            var category = Category(
+                                LoginController().getUserId().toString(),
+                                txtCategory.text,
+                                Uuid().v4().toString());
+                            txtCategory.clear();
+                            CategoryController().add(context, category);
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -93,92 +117,138 @@ class AddCategoryPage extends StatelessWidget {
                   ],
                 ),
                 child: Padding(
-                  padding: EdgeInsets.only(left: 15, right: 15, top: 60),
-                  child: Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Categorias existentes",
-                              style: TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              "Salário",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              "Comida",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              "Roupas",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              "Apostas",
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                  padding: EdgeInsets.only(left: 15, right: 15),
+                  child: StreamBuilder<QuerySnapshot>(
+                    stream: CategoryController().list().snapshots(),
+                    builder: (context, snapshot) {
+                      switch (snapshot.connectionState) {
+                        case ConnectionState.none:
+                          return Center(
+                            child: Text('Não foi possível conectar.'),
+                          );
+                        case ConnectionState.waiting:
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        default:
+                          final dados = snapshot.requireData;
+                          if (dados.size > 0) {
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 15),
+                                  child: Text(
+                                      "Mantenha pressionado para excluír."),
+                                ),
+                                SizedBox(
+                                  height: 200.0,
+                                  child: ListView.builder(
+                                    itemCount: dados.size,
+                                    itemBuilder: (context, index) {
+                                      String id = dados.docs[index].id;
+                                      dynamic item = dados.docs[index].data();
+                                      return Card(
+                                        child: ListTile(
+                                          leading: Icon(Icons.description),
+                                          title: Text(item['name'],
+                                              style: TextStyle(
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.black)),
+                                          onTap: () {
+                                            txtUpdateCategory.text =
+                                                item['name'];
+                                            updateCategory(context, id);
+                                          },
+                                          onLongPress: () {
+                                            CategoryController()
+                                                .delete(context, id);
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            );
+                          } else {
+                            return Center(
+                              child: Column(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                        top: 30, bottom: 30),
+                                    child: Text(
+                                        "Adicione sua primeira categoria."),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                      }
+                    },
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),
       ),
     );
   }
-}
 
-class RecoveryMessage extends StatelessWidget {
-  const RecoveryMessage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          content: const Text('Categoria adicionada com sucesso.'),
-          actions: <Widget>[
+  void updateCategory(context, docId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        // retorna um objeto do tipo Dialog
+        return AlertDialog(
+          title: Text("Modificar categoria"),
+          content: SizedBox(
+            height: 60,
+            width: 300,
+            child: Column(
+              children: [
+                TextField(
+                  controller: txtUpdateCategory,
+                  decoration: InputDecoration(
+                    labelText: 'Nome',
+                    prefixIcon: Icon(Icons.description),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actionsPadding: EdgeInsets.fromLTRB(20, 0, 20, 10),
+          actions: [
             TextButton(
-              onPressed: () => {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const AddCategoryPage()))
+              child: Text("fechar"),
+              onPressed: () {
+                txtUpdateCategory.clear();
+                Navigator.of(context).pop();
               },
-              child: const Icon(Icons.done),
+            ),
+            ElevatedButton(
+              child: Text("salvar"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                var newName = Category(
+                  LoginController().getUserId().toString(),
+                  txtUpdateCategory.text,
+                  docId,
+                );
+                if (docId == null) {
+                  CategoryController().add(context, newName);
+                } else {
+                  CategoryController().update(context, docId, newName);
+                }
+                txtUpdateCategory.clear();
+              },
             ),
           ],
-        ),
-      ),
-      child: const Text(
-        'Adicionar',
-        style: TextStyle(color: Colors.white),
-      ),
+        );
+      },
     );
   }
 }

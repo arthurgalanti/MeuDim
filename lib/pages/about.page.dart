@@ -1,7 +1,6 @@
 // ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 final Uri github = Uri.parse('https://flutter.dev');
 
@@ -25,8 +24,8 @@ class AboutPage extends StatelessWidget {
             ),
             Column(mainAxisAlignment: MainAxisAlignment.center, children: [
               Container(
-                width: MediaQuery.of(context).size.width * 0.8,
-                height: MediaQuery.of(context).size.height * 0.5,
+                width: MediaQuery.of(context).size.width * 0.9,
+                height: MediaQuery.of(context).size.height * 0.6,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   boxShadow: [
@@ -92,8 +91,4 @@ class AboutPage extends StatelessWidget {
   }
 }
 
-Future<void> _launchUrl() async {
-  if (!await launchUrl(github)) {
-    throw Exception('Could not launch $github');
-  }
-}
+Future<void> _launchUrl() async {}

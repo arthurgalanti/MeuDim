@@ -2,8 +2,22 @@
 
 import 'package:flutter/material.dart';
 
-class RecoveryPage extends StatelessWidget {
+import '../controller/login_controller.dart';
+
+class RecoveryPage extends StatefulWidget {
   const RecoveryPage({super.key});
+
+  @override
+  State<RecoveryPage> createState() => _RecoveryPageState();
+}
+
+class _RecoveryPageState extends State<RecoveryPage> {
+  var txtEmailEsqueceuSenha = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +65,7 @@ class RecoveryPage extends StatelessWidget {
                       ),
                       SizedBox(height: 60),
                       TextFormField(
+                        controller: txtEmailEsqueceuSenha,
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           labelText: "E-mail",
@@ -73,7 +88,18 @@ class RecoveryPage extends StatelessWidget {
                               borderRadius: BorderRadius.all(
                                 Radius.circular(5),
                               )),
-                          child: RecoveryMessage()),
+                          child: ElevatedButton(
+                            onPressed: () {
+                              LoginController().forgotPassword(
+                                context,
+                                txtEmailEsqueceuSenha.text,
+                              );
+                            },
+                            child: const Text(
+                              'Recuperar',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          )),
                     ],
                   ),
                 ),
@@ -81,36 +107,6 @@ class RecoveryPage extends StatelessWidget {
             ],
           ),
         ),
-      ),
-    );
-  }
-}
-
-class RecoveryMessage extends StatelessWidget {
-  const RecoveryMessage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () => showDialog<String>(
-        context: context,
-        builder: (BuildContext context) => AlertDialog(
-          title: const Text('Recuperação'),
-          content: const Text(
-              'Enviaremos um email caso existir esse cadastro em nossa base, caso receba siga as instruções no e-mail.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context)
-                ..pop()
-                ..pop(),
-              child: const Icon(Icons.done),
-            ),
-          ],
-        ),
-      ),
-      child: const Text(
-        'Recuperar',
-        style: TextStyle(color: Colors.white),
       ),
     );
   }
